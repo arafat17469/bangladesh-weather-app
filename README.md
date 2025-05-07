@@ -2,7 +2,7 @@
 
 A modern and beautiful Flutter weather application that provides real-time weather updates for all 64 districts (zilla) of Bangladesh using OpenWeatherMap API.
 
-![weather-app-banner](assets/screenshots/banner.png)
+
 
 ## 📱 Features
 
@@ -14,13 +14,6 @@ A modern and beautiful Flutter weather application that provides real-time weath
 - 📱 **Responsive UI** with smooth animations.
 - 🇧🇩 Covers **all 64 districts** of Bangladesh.
 
----
-
-
-
-| Home Screen | Search Zilla | Weather Details |
-|-------------|--------------|-----------------|
-| ![Home](assets/screenshots/home.png) | ![Search](assets/screenshots/search.png) | ![Details](assets/screenshots/details.png) |
 
 ---
 

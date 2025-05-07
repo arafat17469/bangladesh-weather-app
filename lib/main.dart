@@ -38,7 +38,7 @@ class WeatherHomeScreen extends StatefulWidget {
 class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
   final WeatherServices _weatherServices = WeatherServices();
   final List<String> bangladeshZillas = [
-    'Dhaka', 'Chittagong', 'Khulna', 'Rajshahi', 'Sylhet', 'Barisal', 'Rangpur',
+    'Dhaka', 'Chattogram', 'Khulna', 'Rajshahi', 'Sylhet', 'Barisal', 'Rangpur',
     'Mymensingh', 'Comilla', 'Narayanganj', 'Gazipur', 'Tangail', 'Bogra',
     'Dinajpur', 'Jessore', 'Narsingdi', 'Faridpur', 'Noakhali', 'Kushtia',
     'Brahmanbaria', 'Satkhira', 'Sirajganj', 'Pabna', 'Naogaon', 'Natore',
@@ -55,6 +55,7 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
   Weather? weatherData;
   bool _isLoading = false;
   bool _isSearching = false;
+  String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
   List<String> filteredZillas = [];
 
@@ -67,9 +68,12 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
 
   Future<void> _fetchWeather() async {
     if (selectedZilla == null) return;
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     try {
-      final weather = await _weatherServices.fetchWeather(selectedZilla!);
+      final weather = await _weatherServices.fetchWeather('$selectedZilla,BD');
       setState(() {
         weatherData = weather;
         _isLoading = false;
@@ -78,10 +82,9 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
       setState(() {
         weatherData = null;
         _isLoading = false;
+        _errorMessage = 'Failed to load weather data: $e';
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load weather data')),
-      );
+      print('Error fetching weather: $e'); // Log error for debugging
     }
   }
 
@@ -198,102 +201,127 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
                       ),
                     if (!_isSearching)
                       Expanded(
-                        child: weatherData == null
-                            ? const Center(
-                                child: Text(
-                                  'No weather data available',
-                                  style: TextStyle(color: Colors.white70, fontSize: 18),
+                        child: _errorMessage != null
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _errorMessage!,
+                                      style: const TextStyle(color: Colors.white70, fontSize: 18),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 20),
+                                    ElevatedButton(
+                                      onPressed: _fetchWeather,
+                                      child: const Text('Retry'),
+                                    ),
+                                  ],
                                 ),
                               )
-                            : ListView(
-                                padding: const EdgeInsets.all(16.0),
-                                children: [
-                                  Lottie.asset(
-                                    _getAnimationAsset(weatherData?.description),
-                                    height: 150,
-                                    width: double.infinity,
-                                  ),
-                                  Text(
-                                    '${weatherData!.temperature.toStringAsFixed(1)}°C',
-                                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                          fontSize: 64,
-                                          color: Colors.white,
-                                        ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Text(
-                                    weatherData!.description,
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 20),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                            : weatherData == null
+                                ? const Center(
+                                    child: Text(
+                                      'No weather data available',
+                                      style: TextStyle(color: Colors.white70, fontSize: 18),
+                                    ),
+                                  )
+                                : ListView(
+                                    padding: const EdgeInsets.all(16.0),
                                     children: [
-                                      const Icon(Icons.water_drop, color: Colors.white70),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Humidity: ${weatherData!.humidity}%',
-                                        style: Theme.of(context).textTheme.bodyMedium,
+                                      Lottie.asset(
+                                        _getAnimationAsset(weatherData?.description),
+                                        height: 150,
+                                        width: double.infinity,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(
+                                            Icons.cloud,
+                                            size: 100,
+                                            color: Colors.white70,
+                                          );
+                                        },
                                       ),
-                                      const SizedBox(width: 20),
-                                      const Icon(Icons.air, color: Colors.white70),
-                                      const SizedBox(width: 8),
                                       Text(
-                                        'Wind: ${weatherData!.windSpeed} m/s',
-                                        style: Theme.of(context).textTheme.bodyMedium,
+                                        '${weatherData!.temperature.toStringAsFixed(1)}°C',
+                                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                              fontSize: 64,
+                                              color: Colors.white,
+                                            ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      Text(
+                                        weatherData!.description,
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 20),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.water_drop, color: Colors.white70),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Humidity: ${weatherData!.humidity}%',
+                                            style: Theme.of(context).textTheme.bodyMedium,
+                                          ),
+                                          const SizedBox(width: 20),
+                                          const Icon(Icons.air, color: Colors.white70),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Wind: ${weatherData!.windSpeed} m/s',
+                                            style: Theme.of(context).textTheme.bodyMedium,
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 30),
+                                      const Text(
+                                        'Hourly Forecast',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      SizedBox(
+                                        height: 120,
+                                        child: ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: _getHourlyForecast(weatherData).length,
+                                          itemBuilder: (context, index) {
+                                            final hour = _getHourlyForecast(weatherData)[index];
+                                            return Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    hour['time'],
+                                                    style: const TextStyle(color: Colors.white70),
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  Icon(
+                                                    hour['condition'] == 'Sunny'
+                                                        ? Icons.wb_sunny
+                                                        : hour['condition'] == 'Cloudy'
+                                                            ? Icons.cloud
+                                                            : Icons.water_drop,
+                                                    color: Colors.white70,
+                                                    size: 30,
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  Text(
+                                                    '${hour['temp'].toStringAsFixed(1)}°C',
+                                                    style: const TextStyle(color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 30),
-                                  const Text(
-                                    'Hourly Forecast',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  SizedBox(
-                                    height: 120,
-                                    child: ListView.builder(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: _getHourlyForecast(weatherData).length,
-                                      itemBuilder: (context, index) {
-                                        final hour = _getHourlyForecast(weatherData)[index];
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                hour['time'],
-                                                style: const TextStyle(color: Colors.white70),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Icon(
-                                                hour['condition'] == 'Sunny'
-                                                    ? Icons.wb_sunny
-                                                    : hour['condition'] == 'Cloudy'
-                                                        ? Icons.cloud
-                                                        : Icons.water_drop,
-                                                color: Colors.white70,
-                                                size: 30,
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Text(
-                                                '${hour['temp'].toStringAsFixed(1)}°C',
-                                                style: const TextStyle(color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
                       ),
                   ],
                 ),

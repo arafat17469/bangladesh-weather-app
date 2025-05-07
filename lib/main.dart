@@ -44,7 +44,7 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
     'Brahmanbaria', 'Satkhira', 'Sirajganj', 'Pabna', 'Naogaon', 'Natore',
     'Sunamganj', 'Joypurhat', 'Habiganj', 'Maulvibazar', 'Lakshmipur',
     'Feni', 'Chandpur', 'Bhola', 'Patuakhali', 'Barguna', 'Jhalokati',
-    'Pirojpur', 'Bandarban', 'Khagrachhari', 'Rangamati', 'Cox\'s Bazar',
+    'Pirojpur', 'Bandarban', 'Khagrachhari', 'Rangamati', 'Coxs Bazar',
     'Madaripur', 'Gopalganj', 'Shariatpur', 'Rajbari', 'Manikganj',
     'Munshiganj', 'Netrokona', 'Sherpur', 'Jamalpur', 'Kishoreganj',
     'Thakurgaon', 'Panchagarh', 'Nilphamari', 'Lalmonirhat', 'Kurigram',
@@ -112,9 +112,9 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
   }
 
   List<Color> _getBackgroundGradient(String? description) {
-    if (description?.contains('rain') ?? false) return [Colors.blueGrey, Colors.grey];
-    if (description?.contains('clear') ?? false) return [Colors.orange, Colors.yellow];
-    return [Colors.grey, Colors.blueGrey];
+    if (description?.contains('rain') ?? false) return [Colors.blueGrey[700]!, Colors.grey[600]!];
+    if (description?.contains('clear') ?? false) return [Colors.orange[600]!, Colors.yellow[300]!];
+    return [Colors.grey[700]!, Colors.blueGrey[600]!];
   }
 
   @override
@@ -129,94 +129,125 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
           ),
         ),
         child: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _isSearching
-                                ? TextField(
-                                    controller: _searchController,
-                                    decoration: InputDecoration(
-                                      hintText: 'Search Zilla...',
-                                      hintStyle: const TextStyle(color: Colors.white70),
-                                      filled: true,
-                                      fillColor: Colors.white.withOpacity(0.2),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(30),
-                                        borderSide: BorderSide.none,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                : Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _isSearching
+                                  ? AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      child: TextField(
+                                        controller: _searchController,
+                                        decoration: InputDecoration(
+                                          hintText: 'Search Zilla...',
+                                          hintStyle: const TextStyle(color: Colors.white70),
+                                          filled: true,
+                                          fillColor: const Color.fromARGB(255, 223, 221, 221).withOpacity(0.15),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(25),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                        ),
+                                        style: const TextStyle(color: Colors.white),
+                                        onChanged: _filterZillas,
+                                        autofocus: true,
                                       ),
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                                    )
+                                  : GestureDetector(
+                                      onTap: () => setState(() => _isSearching = true),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(25),
+                                        ),
+                                        child: Text(
+                                          selectedZilla ?? 'Select a Zilla',
+                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                                fontSize: 20,
+                                                color: Colors.white,
+                                              ),
+                                        ),
+                                      ),
                                     ),
-                                    style: const TextStyle(color: Colors.white),
-                                    onChanged: _filterZillas,
-                                    autofocus: true,
-                                  )
-                                : Text(
-                                    selectedZilla ?? 'Select a Zilla',
-                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 24),
-                                  ),
-                          ),
-                          IconButton(
-                            icon: Icon(_isSearching ? Icons.close : Icons.search, color: Colors.white),
-                            onPressed: () {
-                              setState(() {
-                                _isSearching = !_isSearching;
-                                if (!_isSearching) {
-                                  _searchController.clear();
-                                  filteredZillas = bangladeshZillas;
-                                }
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (_isSearching)
-                      Container(
-                        height: 200,
-                        color: Colors.white.withOpacity(0.1),
-                        child: ListView.builder(
-                          itemCount: filteredZillas.length,
-                          itemBuilder: (context, index) {
-                            final zilla = filteredZillas[index];
-                            return ListTile(
-                              title: Text(zilla, style: const TextStyle(color: Colors.white)),
-                              onTap: () {
+                            ),
+                            const SizedBox(width: 10),
+                            IconButton(
+                              icon: Icon(_isSearching ? Icons.close : Icons.search, color: Colors.white),
+                              onPressed: () {
                                 setState(() {
-                                  selectedZilla = zilla;
-                                  _isSearching = false;
-                                  _searchController.clear();
-                                  filteredZillas = bangladeshZillas;
+                                  _isSearching = !_isSearching;
+                                  if (!_isSearching) {
+                                    _searchController.clear();
+                                    filteredZillas = bangladeshZillas;
+                                  }
                                 });
-                                _fetchWeather();
                               },
-                            );
-                          },
+                            ),
+                          ],
                         ),
                       ),
-                    if (!_isSearching)
+                      if (_isSearching)
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 200),
+                          opacity: _isSearching ? 1.0 : 0.0,
+                          child: Container(
+                            height: _isSearching ? 200 : 0,
+                            color: Colors.white.withOpacity(0.1),
+                            child: ListView.builder(
+                              itemCount: filteredZillas.length,
+                              itemBuilder: (context, index) {
+                                final zilla = filteredZillas[index];
+                                return ListTile(
+                                  title: Text(zilla, style: const TextStyle(color: Colors.white)),
+                                  onTap: () {
+                                    setState(() {
+                                      selectedZilla = zilla;
+                                      _isSearching = false;
+                                      _searchController.clear();
+                                      filteredZillas = bangladeshZillas;
+                                    });
+                                    _fetchWeather();
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
                       Expanded(
                         child: _errorMessage != null
                             ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      _errorMessage!,
-                                      style: const TextStyle(color: Colors.white70, fontSize: 18),
-                                      textAlign: TextAlign.center,
+                                child: Card(
+                                  color: Colors.white.withOpacity(0.2),
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          _errorMessage!,
+                                          style: const TextStyle(color: Colors.white70, fontSize: 16),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 20),
+                                        ElevatedButton(
+                                          onPressed: _fetchWeather,
+                                          child: const Text('Retry'),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 20),
-                                    ElevatedButton(
-                                      onPressed: _fetchWeather,
-                                      child: const Text('Retry'),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               )
                             : weatherData == null
@@ -226,105 +257,129 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
                                       style: TextStyle(color: Colors.white70, fontSize: 18),
                                     ),
                                   )
-                                : ListView(
+                                : Padding(
                                     padding: const EdgeInsets.all(16.0),
-                                    children: [
-                                      Lottie.asset(
-                                        _getAnimationAsset(weatherData?.description),
-                                        height: 150,
-                                        width: double.infinity,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Icon(
-                                            Icons.cloud,
-                                            size: 100,
-                                            color: Colors.white70,
-                                          );
-                                        },
-                                      ),
-                                      Text(
-                                        '${weatherData!.temperature.toStringAsFixed(1)}°C',
-                                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                              fontSize: 64,
-                                              color: Colors.white,
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      Text(
-                                        weatherData!.description,
-                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 20),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const Icon(Icons.water_drop, color: Colors.white70),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Humidity: ${weatherData!.humidity}%',
-                                            style: Theme.of(context).textTheme.bodyMedium,
-                                          ),
-                                          const SizedBox(width: 20),
-                                          const Icon(Icons.air, color: Colors.white70),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Wind: ${weatherData!.windSpeed} m/s',
-                                            style: Theme.of(context).textTheme.bodyMedium,
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 30),
-                                      const Text(
-                                        'Hourly Forecast',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      SizedBox(
-                                        height: 120,
-                                        child: ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: _getHourlyForecast(weatherData).length,
-                                          itemBuilder: (context, index) {
-                                            final hour = _getHourlyForecast(weatherData)[index];
-                                            return Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                              child: Column(
-                                                children: [
-                                                  Text(
-                                                    hour['time'],
-                                                    style: const TextStyle(color: Colors.white70),
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Icon(
-                                                    hour['condition'] == 'Sunny'
-                                                        ? Icons.wb_sunny
-                                                        : hour['condition'] == 'Cloudy'
-                                                            ? Icons.cloud
-                                                            : Icons.water_drop,
+                                    child: Card(
+                                      color: Colors.white.withOpacity(0.2),
+                                      elevation: 8,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: SingleChildScrollView( // Fix for overflow
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Lottie.asset(
+                                                _getAnimationAsset(weatherData?.description),
+                                                height: 200,
+                                                width: double.infinity,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return const Icon(
+                                                    Icons.cloud,
+                                                    size: 100,
                                                     color: Colors.white70,
-                                                    size: 30,
-                                                  ),
-                                                  const SizedBox(height: 10),
+                                                  );
+                                                },
+                                              ),
+                                              Text(
+                                                '${weatherData!.temperature.toStringAsFixed(1)}°C',
+                                                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                                      fontSize: 48,
+                                                      color: Colors.white,
+                                                    ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              Text(
+                                                weatherData!.description,
+                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 18),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              const SizedBox(height: 20),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  const Icon(Icons.water_drop, color: Colors.white70),
+                                                  const SizedBox(width: 8),
                                                   Text(
-                                                    '${hour['temp'].toStringAsFixed(1)}°C',
-                                                    style: const TextStyle(color: Colors.white),
+                                                    'Humidity: ${weatherData!.humidity}%',
+                                                    style: Theme.of(context).textTheme.bodyMedium,
+                                                  ),
+                                                  const SizedBox(width: 20),
+                                                  const Icon(Icons.air, color: Colors.white70),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    'Wind: ${weatherData!.windSpeed} m/s',
+                                                    style: Theme.of(context).textTheme.bodyMedium,
                                                   ),
                                                 ],
                                               ),
-                                            );
-                                          },
+                                              const SizedBox(height: 30),
+                                              const Text(
+                                                'Hourly Forecast',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              const SizedBox(height: 10),
+                                              SizedBox(
+                                                height: 120,
+                                                child: ListView.builder(
+                                                  scrollDirection: Axis.horizontal,
+                                                  itemCount: _getHourlyForecast(weatherData).length,
+                                                  itemBuilder: (context, index) {
+                                                    final hour = _getHourlyForecast(weatherData)[index];
+                                                    return Padding(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                                      child: Card(
+                                                        color: Colors.white.withOpacity(0.3),
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: Column(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              Text(
+                                                                hour['time'],
+                                                                style: const TextStyle(color: Colors.white70),
+                                                              ),
+                                                              const SizedBox(height: 8),
+                                                              Icon(
+                                                                hour['condition'] == 'Sunny'
+                                                                    ? Icons.wb_sunny
+                                                                    : hour['condition'] == 'Cloudy'
+                                                                        ? Icons.cloud
+                                                                        : Icons.water_drop,
+                                                                color: Colors.white70,
+                                                                size: 24,
+                                                              ),
+                                                              const SizedBox(height: 8),
+                                                              Text(
+                                                                '${hour['temp'].toStringAsFixed(1)}°C',
+                                                                style: const TextStyle(color: Colors.white),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ],
+                                    ),
                                   ),
                       ),
-                  ],
-                ),
+                    ],
+                  ),
+          ),
         ),
       ),
     );
